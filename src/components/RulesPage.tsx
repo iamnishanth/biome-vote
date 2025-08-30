@@ -143,6 +143,7 @@ export function RulesPage() {
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center space-x-2"
+              disabled={categories === undefined}
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -189,11 +190,17 @@ export function RulesPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All categories</SelectItem>
-                      {categories?.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                      {categories === undefined ? (
+                        <SelectItem value="loading" disabled>
+                          Loading categories...
                         </SelectItem>
-                      ))}
+                      ) : (
+                        categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -242,24 +249,39 @@ export function RulesPage() {
         {/* Results count */}
         <div className="mb-6">
           <p className="text-sm text-gray-600">
-            {filteredRules?.length || 0} rules found
+            {rules === undefined
+              ? "Loading..."
+              : `${filteredRules?.length || 0} rules found`}
           </p>
         </div>
 
-        {/* Rules Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRules?.map((rule) => (
-            <RuleCard
-              key={rule._id}
-              rule={rule}
-              currentUser={currentUser}
-              onVote={handleVote}
-              onRemoveVote={handleRemoveVote}
-            />
-          ))}
-        </div>
+        {/* Loading State */}
+        {rules === undefined && (
+          <div className="text-center py-12">
+            <div className="inline-flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="text-gray-600">Loading rules...</span>
+            </div>
+          </div>
+        )}
 
-        {filteredRules?.length === 0 && (
+        {/* Rules Grid */}
+        {rules !== undefined && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRules?.map((rule) => (
+              <RuleCard
+                key={rule._id}
+                rule={rule}
+                currentUser={currentUser}
+                onVote={handleVote}
+                onRemoveVote={handleRemoveVote}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {rules !== undefined && filteredRules?.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">
               No rules found matching your criteria.
